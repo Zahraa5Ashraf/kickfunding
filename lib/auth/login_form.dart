@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kickfunding/ui/tab/widgets/profile/constants.dart';
 import '../../../theme/app_color.dart';
 import '../routes/routes.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../ui/custom_input_field.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({
@@ -17,6 +20,17 @@ class LoginForm extends StatefulWidget {
 }
 
 GlobalKey<FormState> _formKey2 = GlobalKey<FormState>();
+
+Future performLogin(BuildContext cont2) async {
+  bool check = false;
+  if (email == 'admin' && password == 'admin') {
+    check = true;
+    constant.success = check;
+    return constant.success;
+  } else {
+    return constant.success;
+  }
+}
 
 Future Login(BuildContext cont) async {
   /**removecomment when online */
@@ -170,8 +184,20 @@ class _LoginFormState extends State<LoginForm> {
                   ),
                 ),
               ),
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey2.currentState!.validate()) {
+                  // Perform login
+
+                  constant.success = await performLogin(context);
+
+                  // Store login status
+                  if (constant.success) {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    prefs.setBool('isLoggedIn', true);
+                  } else if (constant.success == null) {
+                    Center(child: CircularProgressIndicator());
+                  }
                   print('successful');
                   Navigator.of(context).pushReplacementNamed(
                     RouteGenerator.main,
